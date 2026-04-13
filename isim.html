@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Harf Oyunu</title>
+
+<style>
+body{
+    font-family: Arial;
+    text-align:center;
+    margin-top:80px;
+}
+
+#harf{
+    font-size:120px;
+    margin:30px;
+    font-weight:bold;
+}
+
+#sayac{
+    font-size:60px;
+    margin:20px;
+}
+
+button{
+    font-size:20px;
+    padding:10px 20px;
+    margin:10px;
+}
+
+input{
+    font-size:20px;
+    width:80px;
+    text-align:center;
+}
+
+.flash{
+    animation: flashRed 0.5s infinite;
+}
+
+@keyframes flashRed{
+    0%{background:white;}
+    50%{background:red;}
+    100%{background:white;}
+}
+</style>
+</head>
+
+<body>
+
+<h1>Harf Oyunu</h1>
+
+<div id="harf">?</div>
+
+<div>
+Süre:
+<input id="sureInput" type="number" value="30" min="1"> sn
+</div>
+
+<div id="sayac"></div>
+
+<button onclick="harfUret()">Harf Üret</button>
+<button onclick="sayacBaslat()">Sayaç Başlat</button>
+
+<script>
+
+function harfUret(){
+    const harfler="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const r=harfler[Math.floor(Math.random()*harfler.length)];
+    document.getElementById("harf").innerText=r;
+}
+
+let timer;
+let sirenInterval;
+
+function sayacBaslat(){
+
+    document.body.classList.remove("flash");
+
+    clearInterval(timer);
+    clearInterval(sirenInterval);
+
+    let sure=parseInt(document.getElementById("sureInput").value)||30;
+    const sayac=document.getElementById("sayac");
+
+    sayac.innerText=sure;
+
+    timer=setInterval(function(){
+
+        sure--;
+        sayac.innerText=sure;
+
+        if(sure<=0){
+            clearInterval(timer);
+            sayac.innerText="Süre bitti!";
+            document.body.classList.add("flash");
+            sirenCal();
+        }
+
+    },1000);
+}
+
+function sirenCal(){
+
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+
+    sirenInterval=setInterval(()=>{
+
+        const osc=ctx.createOscillator();
+        const gain=ctx.createGain();
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.type="sawtooth";
+        osc.frequency.setValueAtTime(700,ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1200,ctx.currentTime+0.5);
+
+        gain.gain.value=0.2;
+
+        osc.start();
+        osc.stop(ctx.currentTime+0.5);
+
+    },500);
+}
+
+</script>
+
+</body>
+</html>
